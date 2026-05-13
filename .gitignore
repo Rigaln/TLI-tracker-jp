@@ -6,6 +6,7 @@ temp-check/
 
 # Development Scripts
 *.js
+!generate_jp.js
 !locales/**/*.js
 
 # Development Files
