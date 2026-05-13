@@ -1,6 +1,8 @@
 # Development/Source Files
 extracted-app/
 _extracted/
+!_extracted/translations.json
+!_extracted/build/obf-app/translations.json
 extracted-app-original/
 temp-check/
 

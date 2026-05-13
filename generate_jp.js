@@ -143,9 +143,14 @@ const commonRules = [
     { pattern: /Marked Rain of Arrows/g, replacement: "マークアローレイン" }
 ];
 
+const TARGET_PATHS = [
+    path.join(__dirname, '_extracted', 'translations.json'),
+    path.join(__dirname, '_extracted', 'build', 'obf-app', 'translations.json')
+];
+
 function main() {
     if (!fs.existsSync(TRANSLATIONS_PATH)) {
-        console.error('translations.json not found!');
+        console.error('Source translations.json not found!');
         return;
     }
 
@@ -157,13 +162,11 @@ function main() {
         for (const zhKey in data[category]) {
             let translated = null;
 
-            // 1. 完全一致マッピングの確認
             const mappedCategory = termMap[category];
             if (mappedCategory && mappedCategory[zhKey]) {
                 translated = mappedCategory[zhKey];
             }
 
-            // 2. マッピングがない場合、共通ルールを適用（データ系に有効）
             if (!translated && (category === 'itemNames' || category === 'gameContent' || zhKey.includes('宿命'))) {
                 let temp = zhKey;
                 let matched = false;
@@ -173,17 +176,27 @@ function main() {
                         matched = true;
                     }
                 }
-                // 中国語から日本語への部分置換が成功した場合のみ採用
                 if (matched) translated = temp;
             }
 
-            // 3. それでもない場合は、一旦英語（既存の値）を維持
             jpData[category][zhKey] = translated || data[category][zhKey];
         }
     }
 
-    fs.writeFileSync(OUTPUT_PATH, JSON.stringify(jpData, null, 2), 'utf8');
-    console.log(`Generated: ${OUTPUT_PATH}`);
+    const jsonContent = JSON.stringify(jpData, null, 2);
+    
+    // 全てのターゲットパスを上書き
+    TARGET_PATHS.forEach(targetPath => {
+        if (fs.existsSync(targetPath)) {
+            fs.writeFileSync(targetPath, jsonContent, 'utf8');
+            console.log(`Updated: ${targetPath}`);
+        } else {
+            console.warn(`Target not found: ${targetPath}`);
+        }
+    });
+
+    // 念のため translations_jp.json も出力しておく
+    fs.writeFileSync(OUTPUT_PATH, jsonContent, 'utf8');
 }
 
 main();
